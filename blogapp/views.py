@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from .models import blog_post, get_in_touch, Blogs_Comments
+from django.shortcuts import render, redirect, HttpResponse
+from .models import blog_post, get_in_touch, Blogs_Comments, Product_Category, Product, Orders, Lifestyle
 # Create your views here.
 from django.db.models import Q
 from django.contrib import messages
@@ -9,8 +9,13 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+
+
 def index(request):
-    all_latest_pst = blog_post.objects.order_by('-time')[:6]
+    all_latest_pst = blog_post.objects.order_by('-time')
     context = {'all_latest_pst':all_latest_pst}
     return render(request, 'index.html', context)
 
@@ -22,6 +27,17 @@ def all_blogs(request, template='all_blogs.html', page_template='all_blogs_new.h
         template = page_template
     return render(request, template, context)
 
+
+
+def lifestyle(request, template='lifestyle.html', page_template='lifestyle_new.html'):
+    all_latest_pst = Lifestyle.objects.order_by('-time')
+    context = {'all_latest_pst': all_latest_pst, 'page_template': page_template,}
+    if request.is_ajax():
+        template = page_template
+    return render(request, template, context)
+
+
+
 def blog_details(request, pk):
     all_latest_pst = blog_post.objects.order_by('-time')[:6]
     gett_pst = blog_post.objects.get(id=pk)
@@ -32,6 +48,16 @@ def blog_details(request, pk):
 
     context = {'gett_pst': gett_pst, 'all_latest_pst':all_latest_pst, 'all_commnt_count':all_commnt_count, 'all_comments':all_comments}
     return render(request, 'blog_details.html', context)
+
+
+def lifestyle_details(request, pk):
+    all_latest_pst = Lifestyle.objects.order_by('-time')[:6]
+    gett_pst = Lifestyle.objects.get(id=pk)
+    print(gett_pst)
+
+
+    context = {'gett_pst': gett_pst, 'all_latest_pst':all_latest_pst}
+    return render(request, 'lifestyle_details.html', context)
 
 
 def search_blog(request, template='all_blogs.html', page_template='all_blogs_new.html'):
@@ -156,3 +182,80 @@ def submit_comments(request):
     else:
         messages.success(request, "You Have to Login for submitting Comments !!")
         return redirect('signup_login')
+
+
+def shop(request):
+    all_products = Product.objects.order_by('-time')
+    context={'all_products':all_products}
+    return render(request, 'shop.html', context)
+
+
+
+def product_detail(request, pk):
+    get_prod = Product.objects.get(id=pk)
+    latest_prod = Product.objects.order_by('-time')[:6]
+    context = {'get_prod':get_prod, 'latest_prod':latest_prod}
+    return render(request, 'product_details_page.html', context)
+
+
+def mycart_checkout(request):
+    context = {}
+    return render(request, 'mycart_checkout.html', context)
+
+
+
+@csrf_exempt
+def checkout_products(request):
+    frs_nam = request.POST.get('frs_nam')
+    ls_nam = request.POST.get('ls_nam')
+    ch_eml = request.POST.get('ch_eml')
+    phn_num = request.POST.get('phn_num')
+    addrss_ch = request.POST.get('addrss_ch')
+    ch_pss = request.POST.get('ch_pss')
+    json_all_prds_ids = request.POST.get('json_all_prds_ids')
+    sho_total_price = request.POST.get('sho_total_price')
+
+    py_jsn_all_prds_id = json.loads(json_all_prds_ids)
+
+    print(frs_nam, ls_nam, ch_eml, phn_num, addrss_ch, ch_pss,
+                json_all_prds_ids, py_jsn_all_prds_id)
+
+
+
+    if request.user.is_authenticated:
+        myuser = request.user
+    else:
+        if User.objects.filter(username=ch_eml):
+            return HttpResponse('1')
+        myuser = User.objects.create_user(ch_eml, ch_eml, ch_pss)
+        myuser.first_name = frs_nam
+        myuser.last_name = ls_nam
+        myuser.is_active = True
+        myuser.save()
+
+        user = authenticate(username=ch_eml, password=ch_pss)
+        if user is not None:
+            login(request, user)
+
+    print(myuser)
+
+    save_Orders = Orders(customer=myuser, total_price=sho_total_price, customer_first_name=frs_nam, customer_last_name=ls_nam, customer_email=ch_eml,  customer_phone_number=phn_num, customer_address=addrss_ch)
+    save_Orders.save()
+    for i in py_jsn_all_prds_id:
+        save_Orders.products.add(i)
+
+    return HttpResponse(save_Orders.id)
+
+
+def my_account(request):
+    if request.user.is_authenticated:
+        all_odrs = Orders.objects.filter(customer=request.user).order_by('-time')
+        context={'all_odrs':all_odrs}
+        return render(request, 'my_account.html', context)
+    else:
+        return redirect('signup_login')
+
+
+
+def travel_adventure(request):
+    return render(request, 'travel_adventure.html')

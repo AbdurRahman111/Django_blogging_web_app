@@ -15,4 +15,12 @@ urlpatterns = [
     path('logout_func', views.logout_func, name="logout_func"),
     path('login_func', views.login_func, name="login_func"),
     path('submit_comments', views.submit_comments, name="submit_comments"),
+    path('shop', views.shop, name="shop"),
+    path('product_detail/<int:pk>', views.product_detail, name="product_detail"),
+    path('mycart_checkout', views.mycart_checkout, name="mycart_checkout"),
+    path('checkout_products', views.checkout_products, name="checkout_products"),
+    path('my_account', views.my_account, name="my_account"),
+    path('lifestyle', views.lifestyle, name="lifestyle"),
+    path('lifestyle_details/<int:pk>', views.lifestyle_details, name="lifestyle_details"),
+    path('travel_adventure', views.travel_adventure, name="travel_adventure"),
 ]

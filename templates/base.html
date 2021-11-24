@@ -34,7 +34,7 @@ http://www.templatemo.com/free-website-templates/417-grill
         <link rel="stylesheet" href="{% static '' %}css/templatemo_misc.css">
         <link rel="stylesheet" href="{% static '' %}css/flexslider.css">
         <link rel="stylesheet" href="{% static '' %}css/testimonails-slider.css">
-
+        <link rel="icon" href="{% static 'default-monochrome.svg' %}" type="{% static 'default-monochrome.svg' %}">
         <script src="{% static '' %}js/vendor/modernizr-2.6.1-respond-1.1.0.min.js"></script>
     </head>
     <body>
@@ -44,36 +44,61 @@ http://www.templatemo.com/free-website-templates/417-grill
 
             <header>
 
+                <div id="top-header">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="home-account">
+
+                                    <a href="{% url 'my_account' %}" style="color:#F99720;">My account</a>
+
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'logout_func' %}" style="color:#F99720;">
+                                        Logout({% if request.user.first_name %}{{request.user.first_name| truncatechars:10}}{% else %}{{request.user.email| truncatechars:10}}{% endif %})
+                                    </a>
+
+                                    {% else %}
+                                    <a href="{% url 'signup_login' %}" style="color:#F99720;">Login/Signup</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="cart-info">
+                                    <i class="fa fa-shopping-cart"></i>
+                                    (<span style="color:#F99720;"><span id="showitem">0</span> items</span>) in your cart ($<span id="show_price_sum" style="color:#F99720;">0</span>)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="main-header">
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="logo" style="padding:0 0">
                                     <a href="{% url 'index' %}"><img src="{% static 'default-monochrome.svg' %}" title="Grill Template" alt="Grill Website Template" width="110" height="100"></a>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="main-menu">
                                     <ul>
                                         <li><a href="{% url 'index' %}">Home</a></li>
+                                        <li><a href="{% url 'shop' %}">Shop</a></li>
+                                        <li><a href="{% url 'lifestyle' %}">Lifestyle</a></li>
+                                        <li><a href="{% url 'travel_adventure' %}">Travel Adventures</a></li>
                                         <li><a href="{% url 'all_blogs' %}">All Blogs ({% count_blogs %})</a></li>
-                                        <li>
-                                            {% if user.is_authenticated %}
-                                            <a href="{% url 'logout_func' %}">
-                                                Logout({% if request.user.first_name %}{{request.user.first_name| truncatechars:8}}{% else %}{{request.user.email| truncatechars:8}}{% endif %})
-                                            </a>
+                                        <li><a href="{% url 'mycart_checkout' %}">
+                                            <i class="fa fa-shopping-cart" style="font-size:22px"><sup style="margin-left:-1px; background-color:#F88B35; font-family:'Barlow'; font-weight:500;p" class="badge" id="product_cart">0</sup></i>
+                                        </a></li>
 
-                                            {% else %}
-                                            <a href="{% url 'signup_login' %}">Login/Signup</a>
-                                            {% endif %}
-                                        </li>
 
 
 <!--                                        <li><a href="contact-us.html">Contact</a></li>-->
                                     </ul>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="search-box">
                                     <form method="GET" class="search_form" action="{% url 'search_blog' %}">
                                         <input id="search" type="text" name="search_value" />
@@ -134,12 +159,12 @@ http://www.templatemo.com/free-website-templates/417-grill
                                 <div class="shop-list">
                                     <h4 class="footer-title">Yummy&Funnny Cusinis Categories</h4>
                                     <ul>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>New Grill Menu</a></li>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>Healthy Fresh Juices</a></li>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>Spicy Delicious Meals</a></li>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>Simple Italian Pizzas</a></li>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>Pure Good Yogurts</a></li>
-                                        <li><a href="#"><i class="fa fa-angle-right"></i>Ice-cream for kids</a></li>
+                                        <li><a href="https://nour23450118.wordpress.com/american-cuisines/" target="_blank"><i class="fa fa-angle-right"></i>American Cuisine</a></li>
+                                        <li><a href="https://nour23450118.wordpress.com/indian-cuisine/"target="_blank"><i class="fa fa-angle-right"></i>Indian Cuisine</a></li>
+                                        <li><a href="https://nour23450118.wordpress.com/asian-cuisine/"target="_blank"><i class="fa fa-angle-right"></i>Asian Cuisine</a></li>
+                                        <li><a href="https://nour23450118.wordpress.com/mediterranean-cuisines/"target="_blank"><i class="fa fa-angle-right"></i>Mediterranean Cuisine</a></li>
+                                        <li><a href="https://nour23450118.wordpress.com/european-cuisine/"target="_blank"><i class="fa fa-angle-right"></i>European Cuisine</a></li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -204,6 +229,20 @@ http://www.templatemo.com/free-website-templates/417-grill
 
 
    <script>
+
+
+        console.log('working');
+        if (localStorage.getItem('product_cart')==null){
+            var product_cart={};
+            console.log('none')
+        }
+        else{
+            product_cart = JSON.parse(localStorage.getItem('product_cart'));
+            console.log(product_cart)
+            updateCart(product_cart)
+        }
+
+
         $.ajax({
             url : '{% url 'last_2_blogs' %}',
             type : 'POST',
@@ -255,6 +294,30 @@ http://www.templatemo.com/free-website-templates/417-grill
         document.getElementById('show_latest_blg').innerHTML = search_result;
 
         })
+
+
+
+
+
+
+
+
+
+        function updateCart(product_cart){
+            var sum = 0;
+            var price_sum = 0;
+            for (var item in product_cart){
+
+                sum = sum + product_cart[item][0];
+
+                price_sum = price_sum + product_cart[item][2];
+            }
+            localStorage.setItem('product_cart', JSON.stringify(product_cart))
+            document.getElementById('product_cart').innerHTML = sum;
+            document.getElementById('showitem').innerHTML = sum;
+            document.getElementById('show_price_sum').innerHTML = price_sum;
+
+        }
 
 
     </script>
